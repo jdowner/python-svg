@@ -9,28 +9,35 @@ class Attributes(dict):
         return " ".join('{}="{}"'.format(k, v) for k, v in self.items())
 
 
-class Element(object):
+class Leaf(object):
     def __init__(self, name, **attrs):
         self.attrs = Attributes(attrs)
-        self.children = list()
         self.name = name
 
-    def __repr__(self):
-        if self.children:
-            return '<{name} {attrs}>{children}</{name}>'.format(
-                    name=self.name,
-                    attrs=self.attrs,
-                    children="".join(repr(c) for c in self.children),
-                    )
-
-        return '<{name} {attrs} />'.format(
+    def open_repr(self):
+        return '<{name} {attrs}>{{}}</{name}>'.format(
                 name=self.name,
                 attrs=self.attrs,
                 )
 
+    def closed_repr(self):
+        return '<{name} {attrs} />'.format(name=self.name, attrs=self.attrs)
+
     @property
     def id(self):
         return self.attrs.get("id", None)
+
+
+class Element(Leaf):
+    def __init__(self, name, **attrs):
+        super(Element, self).__init__(name, **attrs)
+        self.children = list()
+
+    def __repr__(self):
+        if not self.children:
+            return self.closed_repr()
+
+        return self.open_repr().format("".join(repr(c) for c in self.children))
 
 
 class Definitions(Element):
@@ -77,3 +84,12 @@ class Rect(Element):
         attrs = Attributes(attrs)
         attrs.update(dict(x=x, y=y, height=height, width=width))
         super(Rect, self).__init__("rect", **attrs)
+
+
+class Text(Leaf):
+    def __init__(self, text, **attrs):
+        super(Text, self).__init__("text", **attrs)
+        self.text = text
+
+    def __repr__(self):
+        return self.open_repr().format(self.text)
