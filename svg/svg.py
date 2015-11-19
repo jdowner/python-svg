@@ -84,3 +84,12 @@ class Rect(Element):
         attrs = Attributes(attrs)
         attrs.update(dict(x=x, y=y, height=height, width=width))
         super(Rect, self).__init__("rect", **attrs)
+
+
+class Text(Leaf):
+    def __init__(self, text, **attrs):
+        super(Text, self).__init__("text", **attrs)
+        self.text = text
+
+    def __repr__(self):
+        return self.open_repr().format(self.text)
